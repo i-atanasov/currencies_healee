@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Currency Converter</title>
+</head>
+
+<style>
+body {
+    background-color: rgba(126, 201, 176, 0.397);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+h1 {
+    padding: 50px 50px 0px;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-size: 25px;
+    text-transform: uppercase;
+}
+
+.output {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    background-color: #b4caba;
+    padding: 50px;
+    border-radius: 10px;
+}
+
+.currencies {
+    padding: 50px;
+}
+
+#base_currency {
+    border-radius: 10px;
+    width: 150px;
+    height: 40px;
+    color: #b4caba;
+    font-size: larger;
+    background-color: rgba(73, 61, 61, 1);
+}
+
+</style>
+
+<body>
+    <h1>Currency converter</h1>
+    <div class = "currencies"><em>Choose currency:</em>
+        <select id = "base_currency">
+            <option value = "aud">AUD</option>
+            <option value = "bgn">BGN</option>
+            <option value = "cad">CAD</option>
+            <option value = "chf">CHF</option>
+            <option value = "eur">EUR</option>
+            <option value = "nzd">NZD</option>
+            <option value = "usd" selected>USD</option>
+        </select>
+    </div>
+
+    <div class = "output">
+        <div class = "grid"><strong>More than 1</strong>
+            <p id = "firstGroup"></p>
+        </div>
+        <div class = "grid"><strong>1 to 1.15</strong>
+            <p id = "secondGroup"></p>
+        </div>
+        <div class = "grid"><strong>More than one</strong>
+            <p id = "thirdGroup"></p>
+        </div>
+    </div>
+
+
+<script>
+    const base = document.getElementById("base_currency");
+    var l=0;
+
+    base.addEventListener("change", showRates);
+    showRates();
+
+    function clearRates () {
+        document.getElementById("firstGroup").innerHTML = "";
+        document.getElementById("secondGroup").innerHTML = "";
+        document.getElementById("thirdGroup").innerHTML = "";
+    }
+
+    function showRates() {
+        const selectedCurrencies = ["aud", "bgn", "cad", "chf", "eur", "nzd", "usd"];
+        const baseCurrency = base.value;
+        clearRates();
+        
+        let requestUrl = "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/" + baseCurrency + ".json"
+        const xmlhttp = new XMLHttpRequest();        
+        xmlhttp.open("GET", requestUrl);
+        xmlhttp.send();
+        xmlhttp.onload = function() {
+            const myObj = JSON.parse(this.responseText);
+            var currList = {};
+            var tempArray = [];
+
+            for (var n = 0; n < selectedCurrencies.length; n++) {
+                var i = selectedCurrencies[n];
+                const demo = (myObj[baseCurrency][i]).toFixed(3);
+                function addObject(currCode, rate) {
+                    this.currCode = i;
+                    this.rate = demo;
+                };
+                tempArray[tempArray.length] = new addObject(i, demo);
+            }
+           
+            var countS = 0, countE = 0, countB = 0;
+
+            for (var k=0; k<tempArray.length; k++) {
+                if (tempArray[k].rate<1) {
+                    countS++;
+                    document.getElementById("firstGroup").innerHTML += tempArray[k].currCode.toUpperCase() + " " + tempArray[k].rate + "<br>";
+                }
+                else if (tempArray[k].rate>1&&tempArray[k].rate<=1.15) {
+                    countE++;
+                   document.getElementById("secondGroup").innerHTML += tempArray[k].currCode.toUpperCase() + " " + tempArray[k].rate  + "<br>";
+                }
+                else if (tempArray[k].rate>1.15) {
+                    countB++;
+                   document.getElementById("thirdGroup").innerHTML += tempArray[k].currCode.toUpperCase() + " " + tempArray[k].rate  + "<br>";
+                }
+            }   
+
+            document.getElementById("firstGroup").innerHTML += "<br>" + "Count:" + countS; 
+            document.getElementById("secondGroup").innerHTML += "<br>" + "Count:" + countE; 
+            document.getElementById("thirdGroup").innerHTML += "<br>" + "Count:" + countB; 
+
+        }
+    }
+    
+</script>
